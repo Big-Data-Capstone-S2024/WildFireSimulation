@@ -1,3 +1,4 @@
 config.ipynb
 downloads/
-extracted/
+extracted_data/
+__pycache__/
