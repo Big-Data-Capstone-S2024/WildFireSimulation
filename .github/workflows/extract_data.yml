@@ -11,6 +11,7 @@ on:
 jobs:
   run-python:
     runs-on: ubuntu-latest
+    environment: WildfireEnvironment
 
     steps:
       - name: Checkout repository
@@ -27,4 +28,4 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run Python script
-        run: python cwfis/extract_to_mongodb.py
+        run: python ./cwfis/extract_to_mongodb.py

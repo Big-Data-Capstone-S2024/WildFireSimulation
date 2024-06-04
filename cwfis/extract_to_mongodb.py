@@ -15,16 +15,8 @@ import os
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def list_zip_files(base_url):
-    """Lists all ZIP files in the directory at the given base URL."""
-    response = requests.get(base_url)
-    response.raise_for_status()
-    html_content = response.text
-
-    # Assuming the server lists files as links in the HTML
-    soup = BeautifulSoup(html_content, 'html.parser')
-    zip_files = [urljoin(base_url, link.get('href')) for link in soup.find_all('a') if link.get('href').endswith('.zip')]
-    return zip_files
+# Load environment variables from the .env file
+load_dotenv()
 
 def download_zip(url, save_path):
     """Downloads a ZIP file from a URL to the specified local path."""
@@ -35,8 +27,7 @@ def download_zip(url, save_path):
 def extract_zip(zip_path, extract_to):
     """Extracts the ZIP file to the specified directory."""
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        shp_files = [file for file in zip_ref.namelist() if file.endswith('.shp')]
-        zip_ref.extractall(extract_to, members=shp_files)
+        zip_ref.extractall(extract_to)
 
 def connect_to_mongo(uri, retries=5, delay=5):
     for attempt in range(1, retries + 1):
@@ -55,6 +46,17 @@ def connect_to_mongo(uri, retries=5, delay=5):
                 logger.error("All retry attempts failed.")
                 raise
 
+def list_zip_files(base_url):
+    """Lists all ZIP files in the directory at the given base URL."""
+    response = requests.get(base_url)
+    response.raise_for_status()
+    html_content = response.text
+
+    # Assuming the server lists files as links in the HTML
+    soup = BeautifulSoup(html_content, 'html.parser')
+    zip_files = [urljoin(base_url, link.get('href')) for link in soup.find_all('a') if link.get('href').endswith('.zip')]
+    return zip_files
+
 def filter_zip_files_by_year(zip_files, start_year, end_year):
     """Filters ZIP files based on the year range in their names."""
     filtered_files = []
@@ -70,47 +72,53 @@ def filter_zip_files_by_year(zip_files, start_year, end_year):
     return filtered_files
 
 # Function to read shapefiles and insert data into MongoDB
-def read_shapefile_and_insert(shapefile_path, collection):
+def read_shapefile_and_insert(extract_to, collection):
     shapefile_base = "2013_hotspots"  # Adjust as necessary
     required_files = [f"{shapefile_base}.shp", f"{shapefile_base}.shx", f"{shapefile_base}.dbf"]
     
+    # List the files in the extraction directory
+    extracted_files = os.listdir(extract_to)
+    print("Extracted files:", extracted_files)
+    
     for required_file in required_files:
-        if not os.path.exists(os.path.join(extract_to, required_file)):
+        if required_file not in extracted_files:
             raise FileNotFoundError(f"Missing required shapefile component: {required_file}")
     
     shp = shapefile.Reader(os.path.join(extract_to, shapefile_base))
     for sr in shp.shapeRecords():
         record = sr.record.as_dict()
         collection.insert_one(record)
-        print('len of record:', len(record))
+        print("len(record):", len(record))
 
-# Load environment variables from the .env file
-load_dotenv()
+def main():
+    base_url = os.getenv('BASE_URL')
+    start_year = os.getenv("START_YEAR")
+    end_year = os.getenv("END_YEAR")
+    
+    # Get the directory where the current script is located
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    extract_to = script_dir
+    
+    # List and filter zip files
+    zip_files = list_zip_files(base_url)
+    filtered_zip_files = filter_zip_files_by_year(zip_files, int(start_year), int(end_year))
 
-# Access the variables
-base_url = os.getenv('BASE_URL')
-extract_to = os.getenv('EXTRACT_TO')
-db_name = os.getenv('DB_NAME')
-collection_name = os.getenv('COLLECTION_NAME')
-mongo_uri = os.getenv('MONGO_URI')
-start_year = os.getenv('START_YEAR')
-end_year = os.getenv('END_YEAR')
+    # MongoDB setup
+    mongo_uri = os.getenv("MONGO_URI")
+    mongo_db = os.getenv("MONGO_DB")
+    mongo_collection = os.getenv("MONGO_COLLECTION")
+    
+    client = MongoClient(mongo_uri)
+    db = client[mongo_db]
+    collection = db[mongo_collection]
 
-client = connect_to_mongo(mongo_uri)
+    for zip_url in filtered_zip_files:
+        print('inserting data from:', zip_url)
+        zip_path = os.path.join('downloads', os.path.basename(zip_url))
+        os.makedirs('downloads', exist_ok=True)
+        download_zip(zip_url, zip_path)
+        extract_zip(zip_path, extract_to) 
+        read_shapefile_and_insert(extract_to, collection)
 
-# Access the database and collection
-db = client[db_name]
-# @TODO make the collection with the corresponding year
-collection = db[collection_name]
-
-# Steps
-zip_files = list_zip_files(base_url)
-filtered_zip_files = filter_zip_files_by_year(zip_files, int(start_year), int(end_year))
-
-for zip_url in filtered_zip_files:
-    print('inserting data from:', zip_url)
-    zip_path = os.path.join('downloads', os.path.basename(zip_url))
-    os.makedirs('downloads', exist_ok=True)
-    download_zip(zip_url, zip_path)
-    extract_zip(zip_path, extract_to) 
-    read_shapefile_and_insert(extract_to, collection)
+if __name__ == "__main__":
+    main()
