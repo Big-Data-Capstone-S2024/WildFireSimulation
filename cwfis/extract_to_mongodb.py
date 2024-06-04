@@ -39,17 +39,6 @@ def extract_zip(zip_path, extract_to):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
         shp_files = [file for file in zip_ref.namelist() if file.endswith('.shp')]
         zip_ref.extractall(extract_to, members=shp_files)
-        
-def shape_record_to_geojson(shape_record):
-    """Convert a shapefile record to a GeoJSON feature."""
-    geom = shape_record.shape.__geo_interface__
-    properties = shape_record.record.as_dict()
-    feature = {
-        "type": "Feature",
-        "geometry": geom,
-        "properties": properties
-    }
-    return feature
 
 def connect_to_mongo(uri, retries=5, delay=5):
     for attempt in range(1, retries + 1):
@@ -67,13 +56,6 @@ def connect_to_mongo(uri, retries=5, delay=5):
             else:
                 logger.error("All retry attempts failed.")
                 raise
-
-def insert_data_to_mongodb(data, db_name, collection_name, mongo_uri):
-    client = MongoClient(mongo_uri)
-    db = client[db_name]
-    collection = db[collection_name]
-    print('inserting....')
-    collection.insert_many(data)
 
 def filter_zip_files_by_year(zip_files, start_year, end_year):
     """Filters ZIP files based on the year range in their names."""
