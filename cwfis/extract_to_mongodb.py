@@ -1,6 +1,5 @@
 import zipfile
 import os
-import json
 import requests
 from pymongo import MongoClient
 from urllib.parse import urljoin
@@ -11,7 +10,6 @@ import logging
 import time
 from dotenv import load_dotenv
 import os
-from bson import BSON
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
