@@ -71,14 +71,18 @@ def filter_zip_files_by_year(zip_files, start_year, end_year):
 
 # Function to read shapefiles and insert data into MongoDB
 def read_shapefile_and_insert(shapefile_path, collection):
-    for filename in os.listdir(shapefile_path):
-        with shapefile.Reader(os.path.join(shapefile_path, filename)) as shp:
-            fields = [field[0] for field in shp.fields[1:]]  # Extract field names
-            for sr in shp.shapeRecords():
-                record = dict(zip(fields, sr.record))  # Create a dictionary from field names and record values
-                record['geometry'] = sr.shape.__geo_interface__  # Add geometry data to the record
-                collection.insert_one(record)  # Insert record into MongoDB collection
-                print('len of record:', len(record))
+    shapefile_base = "2013_hotspots"  # Adjust as necessary
+    required_files = [f"{shapefile_base}.shp", f"{shapefile_base}.shx", f"{shapefile_base}.dbf"]
+    
+    for required_file in required_files:
+        if not os.path.exists(os.path.join(extract_to, required_file)):
+            raise FileNotFoundError(f"Missing required shapefile component: {required_file}")
+    
+    shp = shapefile.Reader(os.path.join(extract_to, shapefile_base))
+    for sr in shp.shapeRecords():
+        record = sr.record.as_dict()
+        collection.insert_one(record)
+        print('len of record:', len(record))
 
 # Load environment variables from the .env file
 load_dotenv()
