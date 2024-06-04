@@ -73,8 +73,6 @@ def filter_zip_files_by_year(zip_files, start_year, end_year):
 
 # Function to read shapefiles and insert data into MongoDB
 def read_shapefile_and_insert(shapefile_path, collection):
-    print('reading shapefile')
-    print(shapefile_path)
     for filename in os.listdir(shapefile_path):
         with shapefile.Reader(os.path.join(shapefile_path, filename)) as shp:
             fields = [field[0] for field in shp.fields[1:]]  # Extract field names
@@ -82,6 +80,7 @@ def read_shapefile_and_insert(shapefile_path, collection):
                 record = dict(zip(fields, sr.record))  # Create a dictionary from field names and record values
                 record['geometry'] = sr.shape.__geo_interface__  # Add geometry data to the record
                 collection.insert_one(record)  # Insert record into MongoDB collection
+                print('len of record:', len(record))
 
 # Load environment variables from the .env file
 load_dotenv()
@@ -107,6 +106,7 @@ zip_files = list_zip_files(base_url)
 filtered_zip_files = filter_zip_files_by_year(zip_files, int(start_year), int(end_year))
 
 for zip_url in filtered_zip_files:
+    print('inserting data from:', zip_url)
     zip_path = os.path.join('downloads', os.path.basename(zip_url))
     os.makedirs('downloads', exist_ok=True)
     download_zip(zip_url, zip_path)
