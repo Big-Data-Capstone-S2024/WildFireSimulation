@@ -108,7 +108,7 @@ def main():
     mongo_uri = os.getenv("MONGO_URI")
     mongo_db = os.getenv("DB_NAME")
     mongo_collection = os.getenv("COLLECTION_NAME")
-    
+    print('connecting to mongo', mongo_uri, mongo_db)
     client = MongoClient(mongo_uri)
     db = client[mongo_db]
     # Create a collection for each year

@@ -30,4 +30,4 @@ jobs:
       - name: Run Python script
         run: python ./cwfis/extract_to_mongodb.py
         env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_URI: ${{ secrets.MONGO_URI }}
