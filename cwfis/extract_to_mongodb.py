@@ -72,8 +72,8 @@ def filter_zip_files_by_year(zip_files, start_year, end_year):
     return filtered_files
 
 # Function to read shapefiles and insert data into MongoDB
-def read_shapefile_and_insert(extract_to, collection):
-    shapefile_base = "2013_hotspots"  # Adjust as necessary
+def read_shapefile_and_insert(extract_to, collection, year):
+    shapefile_base = year + "_hotspots"  # Adjust as necessary
     required_files = [f"{shapefile_base}.shp", f"{shapefile_base}.shx", f"{shapefile_base}.dbf"]
     
     # List the files in the extraction directory
@@ -110,15 +110,12 @@ def main():
     
     client = MongoClient(mongo_uri)
     db = client[mongo_db]
-    collection = db[mongo_collection]
-
+    # Create a collection for each year
     for zip_url in filtered_zip_files:
-        print('inserting data from:', zip_url)
-        zip_path = os.path.join('downloads', os.path.basename(zip_url))
-        os.makedirs('downloads', exist_ok=True)
-        download_zip(zip_url, zip_path)
-        extract_zip(zip_path, extract_to) 
-        read_shapefile_and_insert(extract_to, collection)
+        year = os.path.basename(zip_url).split('_')[0]
+        collection = db[mongo_collection + f"_{year}"]
+        print(f"Creating collection for year {year}")
+        read_shapefile_and_insert(extract_to, collection, year)
 
 if __name__ == "__main__":
     main()
