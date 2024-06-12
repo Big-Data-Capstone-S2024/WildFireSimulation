@@ -88,7 +88,6 @@ def read_shapefile_and_insert(extract_to, collection, year):
     for sr in shp.shapeRecords():
         record = sr.record.as_dict()
         collection.insert_one(record)
-        print("len(record):", len(record))
 
 def main():
     base_url = os.getenv('BASE_URL')
@@ -122,6 +121,7 @@ def main():
         extract_zip(zip_path, extract_to) 
         print('inserting data from:', zip_url)
         read_shapefile_and_insert(extract_to, collection, year)
+        print('data for', year, 'inserted')
 
 if __name__ == "__main__":
     main()
