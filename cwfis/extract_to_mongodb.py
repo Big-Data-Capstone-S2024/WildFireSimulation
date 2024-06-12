@@ -97,7 +97,8 @@ def main():
     
     # Get the directory where the current script is located
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    extract_to = script_dir
+    extract_to = script_dir + '/extracted_data'
+    print(extract_to)
     
     # List and filter zip files
     zip_files = list_zip_files(base_url)
@@ -115,6 +116,11 @@ def main():
         year = os.path.basename(zip_url).split('_')[0]
         collection = db[mongo_collection + f"_{year}"]
         print(f"Creating collection for year {year}")
+        zip_path = os.path.join('downloads', os.path.basename(zip_url))
+        os.makedirs('downloads', exist_ok=True)
+        download_zip(zip_url, zip_path)
+        extract_zip(zip_path, extract_to) 
+        print('inserting data from:', zip_url)
         read_shapefile_and_insert(extract_to, collection, year)
 
 if __name__ == "__main__":
