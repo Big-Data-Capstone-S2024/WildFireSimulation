@@ -28,6 +28,6 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
       - name: Run Python script
-        run: python ./cwfis/extract_to_mongodb.py
+        run: python ./notebook/extract_to_mongodb.py
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
