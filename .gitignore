@@ -1,0 +1,5 @@
+config.ipynb
+downloads/
+extracted_data/
+__pycache__/
+.env
