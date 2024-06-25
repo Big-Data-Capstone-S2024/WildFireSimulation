@@ -21,10 +21,6 @@ def insert_data_to_mongodb(csv_path, collection_name):
         # Connect to the database
         db = client[db_name]
 
-        # Check the connection
-        client.admin.command('ping')
-        print("Connected to MongoDB successfully.")
-
         # Read the CSV file into a DataFrame
         df = pd.read_csv(csv_path)
 
@@ -32,7 +28,7 @@ def insert_data_to_mongodb(csv_path, collection_name):
         collection = db[collection_name]
         collection.insert_many(df.to_dict(orient='records'))
 
-        print(f"Data from '{csv_path}' inserted into MongoDB collection '{collection_name}' successfully.")
+        # print(f"Data from '{csv_path}' inserted into MongoDB collection '{collection_name}' successfully.")
 
     except ConnectionFailure as e:
         print(f"Could not connect to MongoDB: {e}")
@@ -46,10 +42,6 @@ def read_data_from_mongodb(collection_name, query={}):
         
         # Connect to the database
         db = client[db_name]
-
-        # Check the connection
-        #client.admin.command('ping')
-        # print("Connected to MongoDB successfully.")
 
         # Read data from the specified collection
         collection = db[collection_name]
@@ -91,11 +83,7 @@ def insert_dataframe_to_mongodb(df, collection_name):
         
         # Connect to the database
         db = client[db_name]
-
-        # Check the connection
-        #client.admin.command('ping')
-        #print("Connected to MongoDB successfully.")
-
+        
         # Drop the index
         df = df.reset_index(drop=True)
         
@@ -109,7 +97,7 @@ def insert_dataframe_to_mongodb(df, collection_name):
         collection = db[collection_name]
         collection.insert_many(data)
 
-        print(f"Inserted {len(data)} records into the collection '{collection_name}'.")
+        # print(f"Inserted {len(data)} records into the collection '{collection_name}'.")
 
     except ConnectionFailure as e:
         print(f"Could not connect to MongoDB: {e}")
@@ -119,5 +107,3 @@ def insert_dataframe_to_mongodb(df, collection_name):
         # Close the connection
         client.close()
         print("Connection closed.")
-
-
