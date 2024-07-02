@@ -13,6 +13,28 @@ load_dotenv()
 db_name = os.getenv('DB_NAME')
 mongo_uri = os.getenv('MONGO_URI')
 
+def insert_df_only_to_mongodb(df, collection_name):
+    try:
+        # Create a MongoDB client
+        client = MongoClient(mongo_uri)
+        
+        # Connect to the database
+        db = client[db_name]
+        
+        # Insert data into the collection
+        collection = db[collection_name]
+        collection.insert_many(df.to_dict(orient='records'))
+        # print(f"Inserted {len(df)} records into the collection '{collection_name}'.")
+
+    except ConnectionFailure as e:
+        print(f"Could not connect to MongoDB: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        # Close the connection
+        client.close()
+        print("Connection closed.")
+
 def insert_data_to_mongodb(csv_path, collection_name):
     try:
         # Create a MongoDB client
@@ -87,38 +109,8 @@ def insert_dataframe_to_mongodb(df, collection_name):
         # Drop the index
         df = df.reset_index(drop=True)
         
-         # Convert geometry to GeoJSON
+        # Convert geometry to GeoJSON
         df['geometry'] = df['geometry'].apply(lambda x: x.__geo_interface__)
-        
-        # Convert DataFrame to a list of dictionaries
-        data = df.to_dict(orient='records')
-        
-        # Insert data into the collection
-        collection = db[collection_name]
-        collection.insert_many(data)
-
-        # print(f"Inserted {len(data)} records into the collection '{collection_name}'.")
-
-    except ConnectionFailure as e:
-        print(f"Could not connect to MongoDB: {e}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        # Close the connection
-        client.close()
-        print("Connection closed.")
-        
-
-def insert_to_mongodb(df, collection_name):
-    try:
-        # Create a MongoDB client
-        client = MongoClient(mongo_uri)
-        
-        # Connect to the database
-        db = client[db_name]
-        
-        # Drop the index
-        df = df.reset_index(drop=True)
         
         # Convert DataFrame to a list of dictionaries
         data = df.to_dict(orient='records')
