@@ -107,3 +107,33 @@ def insert_dataframe_to_mongodb(df, collection_name):
         # Close the connection
         client.close()
         print("Connection closed.")
+        
+
+def insert_to_mongodb(df, collection_name):
+    try:
+        # Create a MongoDB client
+        client = MongoClient(mongo_uri)
+        
+        # Connect to the database
+        db = client[db_name]
+        
+        # Drop the index
+        df = df.reset_index(drop=True)
+        
+        # Convert DataFrame to a list of dictionaries
+        data = df.to_dict(orient='records')
+        
+        # Insert data into the collection
+        collection = db[collection_name]
+        collection.insert_many(data)
+
+        # print(f"Inserted {len(data)} records into the collection '{collection_name}'.")
+
+    except ConnectionFailure as e:
+        print(f"Could not connect to MongoDB: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        # Close the connection
+        client.close()
+        print("Connection closed.")
