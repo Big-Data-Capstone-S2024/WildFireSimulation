@@ -99,7 +99,27 @@ def load_data_from_mongodb(collection_name):
         print(f"Could not connect to MongoDB: {e}")
     except Exception as e:
         print(f"An error occurred: {e}")
+
+def load_all_data_from_mongodb(collection_name):
+    try:
+        # Create a MongoDB client
+        client = MongoClient(mongo_uri)
         
+        # Connect to the database
+        db = client[db_name]
+
+        # Read data from the specified collection
+        collection = db[collection_name]
+        data = list(collection.find())
+        df = pd.DataFrame(data)
+        
+        return df
+
+    except ConnectionFailure as e:
+        print(f"Could not connect to MongoDB: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
 def insert_dataframe_to_mongodb(df, collection_name):
     try:
         # Create a MongoDB client
