@@ -14,26 +14,6 @@ db_name = os.getenv('DB_NAME')
 mongo_uri = os.getenv('MONGO_URI')
 app_name = os.getenv('APP_NAME')
 contact_email = os.getenv('CONTACT_EMAIL')
-
-def reverse_geocode_nominatim(lat, lon):
-    url = f'https://nominatim.openstreetmap.org/reverse'
-    params = {
-        'format': 'json',
-        'lat': lat,
-        'lon': lon,
-        'zoom': 10,
-        'addressdetails': 1
-    }
-    headers = {
-        'User-Agent': f'{app_name} ({contact_email})'
-    }
-    response = requests.get(url, params=params, headers=headers)
-    if response.status_code == 200:
-        data = response.json()
-        return data.get('address', {}).get('city', None)
-    else:
-        print(f"Error: {response.status_code}")
-        return None
     
 def insert_df_only_to_mongodb(df, collection_name):
     try:
@@ -113,11 +93,6 @@ def load_data_from_mongodb(collection_name):
         df = pd.DataFrame(data)
         gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.lon, df.lat))
         gdf.set_crs(epsg=4326, inplace=True)
-
-        # Add city column by applying the reverse geocoding function
-        gdf['city'] = gdf.apply(lambda row: reverse_geocode_nominatim(row.lat, row.lon), axis=1)
-
-     
         return gdf
 
     except ConnectionFailure as e:
