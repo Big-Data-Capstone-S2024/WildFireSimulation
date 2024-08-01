@@ -129,3 +129,49 @@ def insert_dataframe_to_mongodb(df, collection_name):
         # Close the connection
         client.close()
         print("Connection closed.")
+
+def delete_data_in_collection(collection_name):
+    try:
+        # Create a MongoDB client
+        client = MongoClient(mongo_uri)
+        
+        # Connect to the database
+        db = client[db_name]
+        
+        # Delete all documents in the collection
+        collection = db[collection_name]
+        collection.delete_many({})
+        print(f"Deleted all documents in the collection '{collection_name}'.")
+
+    except ConnectionFailure as e:
+        print(f"Could not connect to MongoDB: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        # Close the connection
+        client.close()
+        print("Connection closed.")
+
+
+def count_documents_in_collection(collection_name):
+    try:
+        # Create a MongoDB client
+        client = MongoClient(mongo_uri)
+        
+        # Connect to the database
+        db = client[db_name]
+        
+        # Count documents in the collection
+        collection = db[collection_name]
+        count = collection.count_documents({})
+        print(f"The collection '{collection_name}' contains {count} documents.")
+        return count
+
+    except ConnectionFailure as e:
+        print(f"Could not connect to MongoDB: {e}")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        # Close the connection
+        client.close()
+        print("Connection closed.")
