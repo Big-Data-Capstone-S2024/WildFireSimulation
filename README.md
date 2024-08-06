@@ -15,3 +15,6 @@ Members:
 Datasets:
 *https://cwfis.cfs.nrcan.gc.ca/background/summary/fwi*<br/>
 *https://cwfis.cfs.nrcan.gc.ca/background/summary/fbp*
+
+### **References**<br/>
+https://arxiv.org/pdf/1912.09363
