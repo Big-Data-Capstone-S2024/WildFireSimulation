@@ -3,4 +3,4 @@ downloads/
 extracted_data/
 __pycache__/
 .env
-.csv
+*.csv
