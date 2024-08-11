@@ -4,3 +4,13 @@ extracted_data/
 __pycache__/
 .env
 *.csv
+/myenv/*
+/data/*
+/model/*
+/scripts/*
+/.github/*
+/.vscode/*
+/.ipynb_checkpoints/*
+/.pytest_cache/*
+
+
